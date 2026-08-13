@@ -36,7 +36,7 @@
       "icons/icon.ico"
     ],
     "category": "Music",
-    "shortDescription": "COMMIX 桌面合成器",
-    "longDescription": "Web Audio 合成器:MIDI 输入输出、8 种音色、力度曲线、录音转录、MIDI 文件播放"
+    "shortDescription": "HUMIX 人声合成器",
+    "longDescription": "钢琴卷帘 + 中文歌词 + 自研共振峰/相位声码器演唱合成 + TTS 整句合成(MIDI 输入输出、SMF 导入导出)"
   }
 }
