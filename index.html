@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HUMIX 人声合成器</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232d6a4f'/%3E%3Ctext x='16' y='22' font-size='16' font-family='Segoe UI,sans-serif' font-weight='700' fill='%2395d5b2' text-anchor='middle'%3EH%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/src/style.css" />
+</head>
+<body>
+  <div id="app">
+    <!-- 自绘标题栏 -->
+    <div class="titlebar" id="titlebar">
+      <span class="tb-title">HUMIX 人声合成器</span>
+      <div class="tb-controls">
+        <button class="tb-btn" id="tb-min" title="最小化">–</button>
+        <button class="tb-btn" id="tb-max" title="最大化">□</button>
+        <button class="tb-btn tb-close" id="tb-close" title="关闭">✕</button>
+      </div>
+    </div>
+
+    <!-- 顶部走带工具条 -->
+    <div class="topbar">
+      <span class="tb-app">HUMIX</span>
+      <button class="act-btn tool-btn active" data-tool="pencil" title="铅笔:点击添加音符">铅笔</button>
+      <button class="act-btn secondary tool-btn" data-tool="eraser" title="橡皮:点击删除音符/换气">橡皮</button>
+      <button class="act-btn" id="roll-play">播放</button>
+      <button class="act-btn secondary" id="roll-stop">停止</button>
+      <button class="act-btn secondary" id="roll-record" title="录制:MIDI 键盘/电脑键盘弹奏实时录音符">录制</button>
+      <button class="act-btn secondary" id="roll-lyrics" title="编辑全部歌词">歌词</button>
+      <button class="act-btn secondary" id="roll-sample" title="载入示例歌曲《两只老虎》">示例歌</button>
+      <button class="act-btn secondary" id="tts-song" title="用 TTS 直接合成示例歌曲歌词(缓存复用)">TTS 歌曲</button>
+      <span class="sub-label">BPM</span>
+      <input type="range" id="roll-bpm" class="ctrl-slider" min="60" max="180" value="120">
+      <span class="ctrl-val" id="roll-bpm-val">120</span>
+      <input type="text" id="roll-lyric" class="pinyin-input roll-lyric" placeholder="选中音符:歌词如 ni3" spellcheck="false">
+      <button class="act-btn secondary" id="roll-import">导入 MIDI</button>
+      <span class="sub-label">曲线</span>
+      <button class="act-btn secondary param-tab active" data-param="breath">气息</button>
+      <button class="act-btn secondary param-tab" data-param="bright">明亮度</button>
+      <button class="act-btn secondary param-tab" data-param="vib">颤音</button>
+      <button class="act-btn secondary param-tab" data-param="vel">力度</button>
+      <button class="act-btn secondary param-tab" data-param="pitch">音高</button>
+      <button class="act-btn secondary" id="roll-clear-param" title="清除当前曲线">清除曲线</button>
+      <button class="act-btn secondary" id="roll-clear">清空</button>
+      <span class="note-info" id="note-info"></span>
+    </div>
+
+    <div class="content">
+      <!-- 左:音色 + 朗读 -->
+      <div class="panel">
+        <div class="panel-head">
+          <span class="panel-title">音色</span>
+          <div class="head-right">
+            <span class="vu-label">输出</span>
+            <span class="vu-meter"><span class="vu-fill" id="vu-fill"></span></span>
+            <span class="vu-num" id="vu-num">0%</span>
+          </div>
+        </div>
+
+        <div class="panel-sep"></div>
+        <div class="panel-title">音色默认</div>
+        <div class="hint">卷帘曲线优先于这里的默认值</div>
+
+        <div class="ctrl-group">
+          <label class="ctrl-label">明亮度</label>
+          <input type="range" id="bright" class="ctrl-slider" min="50" max="200" value="100">
+          <span class="ctrl-val" id="bright-val">100%</span>
+        </div>
+        <div class="ctrl-group">
+          <label class="ctrl-label">颤音</label>
+          <input type="range" id="vib" class="ctrl-slider" min="0" max="100" value="20">
+          <span class="ctrl-val" id="vib-val">20%</span>
+        </div>
+        <div class="ctrl-group">
+          <label class="ctrl-label">音量</label>
+          <input type="range" id="volume" class="ctrl-slider" min="0" max="100" value="80">
+          <span class="ctrl-val" id="volume-val">80%</span>
+        </div>
+        <div class="ctrl-group">
+          <label class="ctrl-label">混响</label>
+          <input type="range" id="reverb" class="ctrl-slider" min="0" max="100" value="18">
+          <span class="ctrl-val" id="reverb-val">18%</span>
+        </div>
+        <div class="ctrl-group">
+          <label class="ctrl-label">移调</label>
+          <input type="range" id="transpose" class="ctrl-slider" min="-12" max="12" value="0">
+          <span class="ctrl-val" id="transpose-val">0</span>
+        </div>
+
+        <div class="panel-sep"></div>
+        <div class="panel-title">朗读</div>
+        <div class="ctrl-group speech-group">
+          <input type="text" id="pinyin-input" class="pinyin-input"
+            placeholder="输入中文或拼音,如: 你好,世界。 ni3 hao3" spellcheck="false">
+          <div class="speech-row">
+            <button class="act-btn" id="speak-btn">朗读</button>
+            <button class="act-btn secondary" id="stop-btn">停止</button>
+            <span class="sub-label">语速</span>
+            <input type="range" id="sp-rate" class="ctrl-slider" min="50" max="200" value="100">
+            <span class="ctrl-val" id="sp-rate-val">100%</span>
+            <span class="sub-label">音高</span>
+            <input type="range" id="sp-pitch" class="ctrl-slider" min="50" max="150" value="100">
+            <span class="ctrl-val" id="sp-pitch-val">100%</span>
+          </div>
+          <div class="speak-status" id="speak-status"></div>
+        </div>
+
+        <div class="panel-sep"></div>
+        <div class="tts-row">
+          <label class="ctrl-label">说话人</label>
+          <select id="tts-voice" class="midi-select" title="TTS 合成声线">
+            <option value="zh-CN-XiaoxiaoNeural">晓晓(女·温暖)</option>
+            <option value="zh-CN-XiaoyiNeural">晓伊(女·活泼)</option>
+            <option value="zh-CN-YunjianNeural">云健(男·激情)</option>
+            <option value="zh-CN-YunxiNeural">云希(男·阳光)</option>
+            <option value="zh-CN-YunxiaNeural">云夏(男·可爱)</option>
+            <option value="zh-CN-YunyangNeural">云扬(男·新闻)</option>
+          </select>
+        </div>
+        <div class="tts-status" id="tts-status"></div>
+
+        <div class="panel-sep"></div>
+        <div class="midi-row">
+          <span class="led" id="in-led"></span>
+          <select id="midi-in-select" class="midi-select" title="MIDI 输入设备">
+            <option value="-1">MIDI 输入:检测中…</option>
+          </select>
+          <button class="act-btn secondary" id="midi-connect">连接</button>
+          <span class="midi-status" id="midi-status">—</span>
+        </div>
+      </div>
+
+      <!-- 右:钢琴卷帘 + 琴键 -->
+      <div class="key-area">
+        <div class="roll-wrap">
+          <canvas id="roll-canvas"></canvas>
+        </div>
+        <div class="keyboard" id="keyboard"></div>
+      </div>
+    </div>
+
+    <!-- 全部歌词面板 -->
+    <div class="lyric-panel" id="lyric-panel" hidden>
+      <div class="lp-head">
+        <span class="lp-title">全部歌词(每行:起始拍 + 空格 + 歌词,如 1.5 ni3)</span>
+        <button class="act-btn" id="lp-apply">应用</button>
+        <button class="act-btn secondary" id="lp-close">关闭</button>
+      </div>
+      <textarea id="lp-text" class="lp-text" spellcheck="false"></textarea>
+    </div>
+  </div>
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>

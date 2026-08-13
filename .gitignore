@@ -1,0 +1,8 @@
+node_modules/
+dist/
+src-tauri/target/
+cache/
+.analyze-venv/
+*.log
+.DS_Store
+tools/voice_data.json
