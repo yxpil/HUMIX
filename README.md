@@ -30,3 +30,15 @@ npm run dev       # 纯浏览器(素材降级为合成)
 ```bash
 npm run build
 ```
+
+---
+
+<div align="center">
+
+<a href="https://github.com/yxpil/HUMIX">
+  <img width="100%" src="https://alittlecatgirlpanel.yxp.hk/card?repo=yxpil/HUMIX" alt="gh-card · yxpil/HUMIX" />
+</a>
+
+<sub>Powered by <a href="https://alittlecatgirlpanel.yxp.hk"><b>gh-card</b></a> · 粉色手写体 README 仓库名片</sub>
+
+</div>
